@@ -4,12 +4,12 @@ const fs = require('fs');
 
 
 function writeOutput(output, result) {
-    fs.writeFile(output, result, (err) => {
-        if (err) {
-            console.error('Error writing to output file:', err);
-            process.exit(1);
-        }
-    });
+    try {
+        fs.writeFileSync(output, JSON.stringify(result, null, 2));
+    } catch (err) {
+        console.error('Error writing to output file:', err);
+        process.exit(1);
+    }
 }
 
 
@@ -35,30 +35,39 @@ if (!fs.existsSync(options.input)) {
 
 
 
-fs.readFile(options.input, 'utf-8', (err, result) => {
-    if (err) {
-        console.error('Error reading input file:', err);
-        process.exit(1);
-    }
+let result;
+
+try {
+    const data = fs.readFileSync(options.input, 'utf-8');
+    const records = JSON.parse(data);
+    const formattedResults = {};
 
 
+    records.forEach(record => {
+        if (record.txt === "Доходи, усього" || record.txt === "Витрати, усього") {
+            formattedResults[record.txt] = record.value;
+        }
+    });
 
-    if (options.output && options.display) {
-        console.log(result);
+    result = formattedResults;
 
-        writeOutput(options.output, result);
-    }
+} catch (err) {
+    console.error('Error reading or parsing input file:', err);
+    process.exit(1);
+}
+
+if (options.output && options.display) {
+    console.log(result);
+    writeOutput(options.output, result);
+}
 
 
-    if (options.output) {
-        writeOutput(options.output, result);
-    }
+if (options.output) {
+    writeOutput(options.output, result);
+}
 
 
-    if (options.display) {
-        console.log(result);
-    }
-
-});
-
+if (options.display) {
+    console.log(result);
+}
 
