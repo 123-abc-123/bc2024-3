@@ -56,11 +56,6 @@ try {
     process.exit(1);
 }
 
-if (options.output && options.display) {
-    console.log(result);
-    writeOutput(options.output, result);
-}
-
 
 if (options.output) {
     writeOutput(options.output, result);
